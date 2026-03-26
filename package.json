@@ -2,6 +2,7 @@
   "name": "astro-theme-axi",
   "type": "module",
   "version": "4.0.1-beta",
+  "packageManager": "pnpm@9.15.9",
   "scripts": {
     "dev": "astro dev",
     "dev:check": "astro check --watch & astro dev",
