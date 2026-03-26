@@ -1,0 +1,16 @@
+{
+  "friends": [
+    {
+      "id_name": "lomit",
+      "desc": "lomit的博客",
+      "link_list": [
+        {
+          "name": "lomit's blog",
+          "link": "https://www.lomit.top/",
+          "avatar": "https://www.lomit.top/_image?href=%2F_astro%2Favatar.BbjUD2QG.png&w=1194&h=1108&f=webp",
+          "intro": "goat"
+        }
+      ]
+    }
+  ]
+}

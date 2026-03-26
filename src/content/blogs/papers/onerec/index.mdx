@@ -1,0 +1,47 @@
+---
+title: OneRec
+publishDate: 2026-03-23
+updatedDate: 2026-03-23
+description: OneRec-v1笔记
+category: research
+heroImage:
+  src: src\content\blogs\papers\onerec\preview.jpg
+tags:
+  - generate recommendation
+  - llm
+  - rl
+language: zh
+---
+
+import { Image } from 'astro:assets'
+import { Aside, Tabs, TabItem, Spoiler } from '@/components/user'
+import { GithubCard, LinkPreview, QRCode, ImageGroup, WebVideo } from '@/components/advanced'
+import tokenizerFig1 from './img/1.png'
+
+<LinkPreview href='https://arxiv.org/pdf/2502.18965' />
+
+## 背景和动机
+### 背景
+传统推荐系统采用多阶段级联架构（召回-粗排-精排），虽然取得重大进展，但存在如下问题：
+1. 计算碎片化
+2. 目标冲突
+3. 脱离AI演进
+### 动机
+LLM 和 VLM 在 scaling laws、强化学习等方面取得显著进展，但推荐系统因架构问题无法借鉴这些成果，因此需要一个端到端的架构来：
+- 实现端到端优化，直接针对最终目标
+- 提高计算密集度和利用效率
+- 大幅降低通信和存储开销
+- 能够应用 scaling laws 和强化学习等先进技术
+## 方法总览
+### Tokenizer
+过往的方法在生成语义IDs时，仅从上下文提取信息却忽略了协同信号，导致重构质量欠佳。鉴于此，OneRec将协同信号和多模态特征结合，利用RQ-Kmeans生成更高质量的分层语义IDs。
+#### Aligned Collaborative-Aware Multimodal Representation
+图 1展示了tokenizer的架构。
+
+<figure class='not-prose my-6 flex flex-col items-center gap-2'>
+  <Image src={tokenizerFig1} alt='tokenizer架构' />
+  <figcaption class='text-center text-sm text-muted-foreground'>
+    图 1
+  </figcaption>
+</figure>
+**Multimodal Representations**：
