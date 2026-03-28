@@ -1,0 +1,120 @@
+---
+title: "leetcode Daily Challenge Record"
+publishDate: 2026-03-28
+updatedDate: 2026-03-28
+description: solutions and problem-solving approaches for leettcode daily challenges.
+category: daily
+heroImage:
+  src: ./preview.jpg
+tags:
+  - algorithms
+  - leetcode
+language: en
+---
+
+## Introduction
+This is my Leetcode daily check-in record, including solutions and problem-solving ideas. Thanks to goat lomit for the reminders and guidance that keep me practicing every day.
+
+## Check-in
+
+### 3/28
+- Problem: Rotate Image (`leetcode-48`)
+- Problem statement: You are given an `n x n` 2D matrix representing an image. Rotate the image by 90 degrees clockwise. You must rotate the image in-place, which means modifying the input matrix directly. Do not use another matrix.
+- Approach: A direct simulation is cumbersome. A cleaner way is to use matrix properties: first transpose the matrix (swap rows and columns), then reverse each row. This yields the matrix after a 90-degree clockwise rotation.
+- Implementation:
+
+```python
+class Solution:
+    def rotate(self, matrix: list[list[int]]) -> None:
+        n = len(matrix)
+        for i in range(0, n - 1):
+            for j in range(i + 1, n):
+                matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
+        mid = n // 2
+        for j in range(mid):
+            for i in range(n):
+                matrix[i][j], matrix[i][n - 1 - j] = matrix[i][n - 1 - j], matrix[i][j]
+```
+
+- Problem: Search a 2D Matrix II (`leetcode-240`)
+- Problem statement: Write an efficient algorithm that searches for a target value in an `m x n` matrix `matrix`. This matrix has the following properties:
+  - Integers in each row are sorted in ascending order from left to right.
+  - Integers in each column are sorted in ascending order from top to bottom.
+- Approach: I did not get the right method at first. The correct strategy is to start from the top-right element `matrix[0][n - 1]`.
+  - If it equals `target`, return `True`.
+  - If it is greater than `target`, eliminate that column (`j -= 1`).
+  - If it is smaller than `target`, eliminate that row (`i += 1`).
+  Each comparison removes one row or one column.
+- Time complexity: $O(m + n)$.
+- Implementation:
+
+```python
+class Solution:
+    def searchMatrix(self, matrix: list[list[int]], target: int) -> bool:
+        m = len(matrix)
+        n = len(matrix[0])
+        i, j = 0, n - 1
+
+        if matrix[i][j] == target:
+            return True
+
+        while 0 <= i < m and 0 <= j < n:
+            if matrix[i][j] > target:
+                j -= 1
+            elif matrix[i][j] < target:
+                i += 1
+            else:
+                return True
+        return False
+```
+
+- Problem: Edit Distance (`leetcode-72`)
+- Problem statement: Given two words `word1` and `word2`, return the minimum number of operations required to convert `word1` to `word2`. You have three operations:
+  - Insert a character
+  - Delete a character
+  - Replace a character
+- Approach: This is a standard dynamic programming problem. Let `dp[i][j]` be the minimum operations required to convert `word1[0:i]` to `word2[0:j]`.
+  - If `word1[i - 1] == word2[j - 1]`, no extra replacement is needed from `dp[i - 1][j - 1]`.
+  - Otherwise, consider insert/delete/replace:
+    - `dp[i][j - 1] + 1`
+    - `dp[i - 1][j] + 1`
+    - `dp[i - 1][j - 1] + 1`
+  So `dp[i][j]` transitions as:
+
+$$
+dp[i][j] = \begin{cases}
+\min(dp[i - 1][j - 1], 1 + \min(dp[i][j - 1], dp[i - 1][j])), & \text{if } word1[i - 1] = word2[j - 1] \\
+1 + \min(dp[i][j - 1], dp[i - 1][j], dp[i - 1][j - 1]), & \text{if } word1[i - 1] \neq word2[j - 1]
+\end{cases}
+$$
+
+- Time complexity: $O(mn)$.
+
+- Implementation:
+
+```python
+class Solution:
+    def minDistance(self, word1: str, word2: str) -> int:
+        m = len(word1)
+        n = len(word2)
+
+        if m == 0:
+            return n
+        elif n == 0:
+            return m
+        else:
+            dp = [[0] * (n + 1) for _ in range(m + 1)]
+            for i in range(m + 1):
+                dp[i][0] = i
+            for j in range(n + 1):
+                dp[0][j] = j
+            for i in range(1, m + 1):
+                for j in range(1, n + 1):
+                    tmp = dp[i - 1][j - 1]
+                    if word1[i - 1] != word2[j - 1]:
+                        tmp += 1
+                    dp[i][j] = 1 + min(dp[i - 1][j], dp[i][j - 1])
+                    dp[i][j] = min(dp[i][j], tmp)
+            return dp[m][n]
+```
+
