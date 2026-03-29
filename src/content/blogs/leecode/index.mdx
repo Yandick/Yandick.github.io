@@ -1,7 +1,7 @@
 ---
 title: leetcode打卡记录
 publishDate: 2026-03-28
-updatedDate: 2026-03-28
+updatedDate: 2026-03-29
 description: 题解和做题思路。
 category: daily
 heroImage:
@@ -104,4 +104,63 @@ class Solution:
                     dp[i][j] = 1 + min(dp[i - 1][j], dp[i][j - 1])
                     dp[i][j] = min(dp[i][j], tmp)
             return dp[m][n]
+```
+
+### 3/29
+- 题目：数字 1 的个数（leetcode-233）
+- 题目描述：给定一个整数 n，计算所有小于等于 n 的非负整数中数字 1 出现的个数。
+- 思路：上来除了暴力没有想到什么方法，我是区qaq。经过goat指导，发现可以按照数位考虑。计数位 $k$ 表示$1,10,100,1000,\ldots$，我们诸位考虑个位上出现多少个 1，十位上出现多少个 1，百位上出现多少个 1，以此类推。对于每个位 $k$，我们可以将 $n$ 分成三部分：高位 $high = n // (k * 10)$，当前位 $cur = (n // k) \% 10$，低位 $low = n \% k$。如果 $cur == 0$，那么当前位上 1 的数量由高位决定，为 $high * k$；如果 $cur == 1$，那么当前位上 1 的数量由高位和低位共同决定，为 $high * k + low + 1$；如果 $cur > 1$，说明当前位为 1 的这一轮已经完整走完，为 $(high + 1) * k$。我们对每个位进行上述计算，并将结果累加起来即可得到答案。
+- 时间复杂度：$O(\log n)$。
+- 代码实现：
+
+```python
+class Solution:
+    def countDigitOne(self, n: int) -> int:
+        ans = 0
+        k = 1
+
+        while k <= n:
+            high = n // (k * 10)
+            cur = (n // k) % 10
+            low = n % k
+            if cur == 0:
+                ans += high * k
+            elif cur == 1:
+                ans += high * k + low + 1
+            else:
+                ans += (high + 1) * k
+            k *= 10
+        return ans
+```
+
+- 题目：课程表 $IV$ （leetcode-1462）
+- 题目描述：你总共需要上 numCourses 门课，课程编号依次为 0 到 numCourses-1 。你会得到一个数组 prerequisite ，其中 prerequisites[i] = $[a_i, b_i]$ 表示如果你想选 $b_i$ 课程，你 必须 先选 $a_i$ 课程。
+    - 有的课会有直接的先修课程，比如如果想上课程 1 ，你必须先上课程 0 ，那么会以 [0,1] 数对的形式给出先修课程数对。
+    - 先决条件也可以是 间接 的。如果课程 a 是课程 b 的先决条件，课程 b 是课程 c 的先决条件，那么课程 a 就是课程 c 的先决条件。
+    - 你也得到一个数组 queries ，其中 queries[j] = $[u_j, v_j]$。对于第 j 个查询，您应该回答课程 $u_j$ 是否是课程 $v_j$ 的先决条件。返回一个布尔数组 answer ，其中 answer[j] 是第 j 个查询的答案。
+- 思路：题目数据范围 numCourses 最大为100，考虑直接使用 Floyd 求传递闭包即可。（后续会将搜索和拓扑排序方法补上）。
+- 时间复杂度：$O(n^3)$。
+- 代码实现：
+
+```python
+class Solution:
+    def checkIfPrerequisite(self, numCourses: int, prerequisites: list[list[int]], queries: list[list[int]]) -> list[bool]:
+        matrix = [[False] * numCourses for _ in range(numCourses)]
+        ans = []
+
+        for edge in prerequisites:
+            u, v = edge[0], edge[1]
+            matrix[u][v] = True
+
+        for k in range(numCourses):
+            for i in range(numCourses):
+                for j in range(numCourses):
+                    matrix[i][j] |= (matrix[i][k] and matrix[k][j])
+
+
+        for edge in queries:
+            begin, end = edge[0], edge[1]
+            ans.append(matrix[begin][end])
+        return ans
+
 ```
