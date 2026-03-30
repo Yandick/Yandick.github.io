@@ -138,11 +138,12 @@ class Solution:
     - 有的课会有直接的先修课程，比如如果想上课程 1 ，你必须先上课程 0 ，那么会以 [0,1] 数对的形式给出先修课程数对。
     - 先决条件也可以是 间接 的。如果课程 a 是课程 b 的先决条件，课程 b 是课程 c 的先决条件，那么课程 a 就是课程 c 的先决条件。
     - 你也得到一个数组 queries ，其中 queries[j] = $[u_j, v_j]$。对于第 j 个查询，您应该回答课程 $u_j$ 是否是课程 $v_j$ 的先决条件。返回一个布尔数组 answer ，其中 answer[j] 是第 j 个查询的答案。
-- 思路：题目数据范围 numCourses 最大为100，考虑直接使用 Floyd 求传递闭包即可。（后续会将搜索和拓扑排序方法补上）。
+- 思路：题目数据范围 numCourses 最大为100，考虑直接使用 Floyd 求传递闭包即可。
 - 时间复杂度：$O(n^3)$。
 - 代码实现：
 
 ```python
+# Floyd
 class Solution:
     def checkIfPrerequisite(self, numCourses: int, prerequisites: list[list[int]], queries: list[list[int]]) -> list[bool]:
         matrix = [[False] * numCourses for _ in range(numCourses)]
@@ -163,4 +164,51 @@ class Solution:
             ans.append(matrix[begin][end])
         return ans
 
+```
+```python
+# Topological Sort
+from collections import deque
+    def checkIfPrerequisite(self, numCourses: int, prerequisites: list[list[int]], queries: list[list[int]]) -> list[bool]:
+        graph = [[] for _ in range(numCourses)]
+        indegree = [0] * numCourses
+        pre = [set() for _ in range(numCourses)]
+
+        for u, v in prerequisites:
+            graph[u].append(v)
+            indegree[v] += 1
+        
+        dq = deque()
+        for _ in range(numCourses):
+            if indegree[_] == 0:
+                dq.append(_)
+        
+        while dq:
+            u = dq.popleft()
+            for v in graph[u]:
+                pre[v].append(u)
+                pre[v] |= pre[u]
+                indegree[v] -= 1
+                if indegree[v] == 0:
+                    dq.append(v)
+        return [u in pre[v] for u, v in queries]
+```
+```python
+# DFS
+def checkIfPrerequisite(self, numCourses: int, prerequisites: list[list[int]], queries: list[list[int]]) -> list[bool]:
+        graph = [[] for _ in range(numCourses)]
+        reach = [[False] * numCourses for _ in range(numCourses)]
+        
+        for u, v in prerequisites:
+            graph[u].append(v)
+        
+        def dfs(start: int, u: int):
+            for v in graph[u]:
+                if reach[start][v] == False:
+                    reach[start][v] = True
+                    dfs(start, v)
+        
+        for i in range(numCourses):
+            dfs(i, i)
+        
+        return[reach[u][v] for u, v in queries]
 ```
