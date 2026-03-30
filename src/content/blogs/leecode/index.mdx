@@ -296,3 +296,37 @@ class Solution:
             else:
                 l = i + 1
 ```
+
+- 题目：最长递增子序列的个数（leetcode-673）
+- 题目描述：给定一个未排序的整数数组 nums ， 返回最长递增子序列的个数 。注意 这个数列必须是 严格 递增的。
+- 思路：自然想到用dp求解。朴素地，我们用$dp[i]$表示以$nums[i]$结尾的最长子序列长度，用$cnt[i]$额外记录对应的最长子序列个数，我们可以得到一套很慢但是能过的代码。
+- 时间复杂度：$O(n^2)$（优化前）
+- 代码实现：
+
+```python
+# 优化前
+class Solution:
+    def findNumberOfLIS(self, nums: list[int]) -> int:
+        length = len(nums)
+        dp = [1] * length
+        cnt = [1] * length
+        ans = 1
+        ans_cnt = 0
+        for i in range(length):
+            for j in range(0, i):
+                if nums[i] > nums[j]:
+                    if dp[j] + 1 > dp[i]:
+                        cnt[i] = cnt[j]
+                    elif dp[j] + 1 == dp[i]:
+                        cnt[i] += cnt[j]
+                    dp[i] = max(dp[i], dp[j] + 1)
+                    ans = max(ans, dp[i])
+        for i in range(length):
+            if dp[i] == ans:
+                    ans_cnt += cnt[i]
+        return ans_cnt
+```
+
+```python
+
+```
