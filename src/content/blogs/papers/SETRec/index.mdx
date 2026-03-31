@@ -1,0 +1,70 @@
+---
+title: SETRec
+publishDate: 2026-03-31
+updatedDate: 2026-03-31
+description: SETRec笔记
+category: research
+heroImage:
+  src: ./preview.jpg
+tags:
+  - generate recommendation
+  - llm
+  - rl
+language: zh
+---
+
+import { Image } from 'astro:assets'
+import { Aside, Tabs, TabItem, Spoiler } from '@/components/user'
+import { GithubCard, LinkPreview, QRCode, ImageGroup, WebVideo } from '@/components/advanced'
+import Fig1 from './img/1.png'
+import Fig2 from './img/2.png'
+
+<LinkPreview href='https://arxiv.org/pdf/2502.10833' />
+
+## 背景和动机
+### 背景
+LLM-based generative recommendation 的基本流程是：把用户历史交互编码成 token 序列，再让 LLM 生成下一个 item。其中最关键的设计之一是 **item identifier**，也就是“一个 item 应该如何映射成 LLM 可读可生成的表示”。现有 identifier 大致分两类：
+1. **Token-sequence identifier**：把 item 表示成多个离散 token 的序列。
+2. **Single-token identifier**：把 item 表示成单个 embedding（如 ID embedding 或 semantic embedding）。
+
+<figure class='not-prose my-6 flex flex-col items-center gap-2'>
+  <Image src={Fig1} alt='local optima problem' />
+  <figcaption class='text-center text-sm text-muted-foreground'>
+    图 1
+  </figcaption>
+</figure>
+
+但无论是哪种设计，都存在一些问题亟待解决。**Token-sequence identifier**有如下两个问题：
+- **Local Optima in Beam Search**：生成是逐 token 自回归进行的，beam search 每一步都只保留局部 top-K 前缀；如果目标 item 的前几个 token 概率不高，就会被过早剪枝，参见图一。
+- **生成效率低**：生成一个 item 需要多步串行 LLM 调用，推理延迟和算力成本都很高。
+
+**Single-token identifier** 也同样有明显短板：
+- 如果用 **ID embedding / CF embedding**，会高度依赖交互数据，对长尾 item 和 cold-start 场景不友好。
+- 如果只用 **semantic embedding**，又会缺失推荐里很关键的 Collaborative Filtering 信息，个性化能力不足。
+### 动机
+作者认为忽略 identifier中 token 之间依赖性有助于并行的 token 生成，同时提高推理效率。基于此，他们为 LLM-based generative recommendation 提出一种新颖的 set idenfier 范式，如图2所示。
+<figure class='not-prose my-6 flex flex-col items-center gap-2'>
+  <Image src={Fig2} alt='set identifier paradigm' />
+  <figcaption class='text-center text-sm text-muted-foreground'>
+    图 2
+  </figcaption>
+</figure>
+这个设计应满足如下两个原则：
+1. **同时整合 semantic + CF information**：兼顾泛化能力和个性化能力。
+2. **Order-agnostic identifier**：item 内不同维度的信息不应被强行串成有序序列，否则会引入不必要的 token dependency，并诱发 beam search 的局部最优问题。
+## 方法总览
+SETRec 的核心思想是不要把一个 item 表示成一个 token，也不要表示成有顺序的 token 序列，而是表示成一个“无序 token 集合”。每个 item 的 set identifier 由两部分组成：
+- **一个 CF token**：表示用户行为交互中学到的协同过滤信息。
+- **多个 semantic tokens**：表示 item 语义的不同潜在维度，而不是把所有语义压成一个 embedding。
+
+SETRec整体流程可以分为两步：
+1. **Order-agnostic Item Tokenization**
+	- 用 CF tokenizer 提取 item 的 CF embedding。
+	- 用 semantic tokenizer 把 item 语义编码成多个 semantic embeddings。
+	- 两者合起来构成 item 的 set identifier。
+2. **Simultaneous Item Generation**
+	- 用户历史中的每个 item 都被展开为一个 token set。
+	- 通过稀疏注意力去掉同一个 item 内 token 之间的依赖。
+	- 用不同的 query vectors 同时生成 CF / S1 / S2 / ... / SN 各个维度的 token。
+	- 再通过 grounding head 把生成的 token set 映射回真实 item。
+## 模型细节

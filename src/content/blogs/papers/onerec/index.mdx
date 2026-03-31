@@ -1,7 +1,7 @@
 ---
 title: OneRec
 publishDate: 2026-03-23
-updatedDate: 2026-03-23
+updatedDate: 2026-03-30
 description: OneRec-v1笔记
 category: research
 heroImage:
@@ -91,17 +91,21 @@ OneRec采用RQ-Kmeans做分词。这个方法相比RQ-VAE有更好的codebook利
 ### Encoder
 #### Multi-Scale Feature Engineering
 OneRec对user的行为数据从四个方面采样：user static pathway，short-term pathway，positive-feedback pathway和lifelong pathway。
+
 **User Static Pathway**：
 - 输入：uid，age，gender等静态特征
 - 输出：$\mathbf{h}_u \in \mathbb{R}^{1 \times d_{\text{model}}}$
+
 **Short-term Pathway** ($L_s=20$)：
 - 输入：最近20次交互的vid/sid，aid，tag，ts，playtime，dur，label
 - 捕捉即时偏好和上下文因素
 - 输出：$\mathbf{h}_s \in \mathbb{R}^{20 \times d_{\text{model}}}$
+
 **Positive-feedback Pathway** ($L_p=256$)：
 - 输入：256次高参与度交互的特征
 - 捕捉长期稳定的正向偏好
 - 输出：$\mathbf{h}_p \in \mathbb{R}^{256 \times d_{\text{model}}}$
+
 **Lifelong Pathway** ：采样最近视频数量高达100,000，因此直接利用注意力机制是不现实的，处理方法参见[Si et al.](https://arxiv.org/pdf/2407.16357)
 
 <figure class='not-prose my-6 flex flex-col items-center gap-2'>
