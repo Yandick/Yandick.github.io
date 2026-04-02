@@ -18,6 +18,7 @@ import { Aside, Tabs, TabItem, Spoiler } from '@/components/user'
 import { GithubCard, LinkPreview, QRCode, ImageGroup, WebVideo } from '@/components/advanced'
 import Fig1 from './img/1.png'
 import Fig2 from './img/2.png'
+import Fig3 from './img/3.png'
 
 <LinkPreview href='https://arxiv.org/pdf/2502.10833' />
 
@@ -68,3 +69,41 @@ SETRec整体流程可以分为两步：
 	- 用不同的 query vectors 同时生成 CF / S1 / S2 / ... / SN 各个维度的 token。
 	- 再通过 grounding head 把生成的 token set 映射回真实 item。
 ## 模型细节
+<figure class='not-prose my-6 flex flex-col items-center gap-2'>
+  <Image src={Fig3} alt='model architecture' />
+  <figcaption class='text-center text-sm text-muted-foreground'>
+    图 3
+  </figcaption>
+</figure>
+SETRec 的模型架构如图3所示，包括 order-agnostic item tokenization 和 simultaneous item generation 两个模块。下面分别介绍这两个模块的细节。
+### Order-agnostic Item Tokenization
+**CF Tokenizer**：作者用 SASRec 和一个线性投影层来获得 item CF mebedding $z_\text{CF} \in \mathbb{R}^d$。
+
+**Semantic Tokenizer**：作者先用预训练的 semantic extractor（Sentence T5）提取语义信息，然后通过训练一个 AE 来获取  semantic token。AE 的 encoder 把 item 语义编码成一个 latent vector：
+$$
+z = [z_{S_1}, z_{S_2}, ..., z_{S_N}] \in \mathbb{R}^{Nd}
+$$
+decoder 则把 $z_\text{sem}$ 解码成 N 个 semantic tokens $\{s_1, s_2, ..., s_N\}$。semantic tokenizer 采用如下重构损失进行训练：
+$$
+\mathcal{L}_\text{AE} = \| s - \hat{s} \|_2^2
+$$
+这里$\hat{s} = \text{Decoder}(z)$是 decoder 的输出，$s$是 extractor 的输出。
+
+**Token Corpus**：通过上述两个 tokenizer，我们就得到了 CF token 和 N 个 semantic tokens。把它们合起来就构成了 item 的 set identifier，即$\hat{i} = {z_\text{CF}, z_{S_1}, z_{S_2}, ..., z_{S_N}}$。因此，我们可以为每一个信息维度准备一个 token corpus，$\mathcal{Z}_\text{CF}, \mathcal{Z}_{S_1}, \ldots, \mathcal{Z}_{S_N}$。这些收集到的 token corpus 会用作 grounding head，以便更有效地将生成出的 token 映射回真实 item。（详细内容参见 Query-guided Generation）
+### Simultaneous Item Generation
+#### Query-guided Generation
+如图3所示，为了让模型生成的 token 对齐多个信息维度，作者引入了一组可学习的 query vectors $q \in \mathbb{R}^d$，$d$是模型隐藏层维度，让模型更好区分不同信息维度分别代表什么。形式上，每个信息维度的 generated token $\hat{z}_k$由如下公式给出：
+$$
+\begin{cases}
+\mathbf{x} = [\{\mathbb{z}_{CF}, \mathbb{z}_{S1}, \dots, \mathbb{z}_{SN}\}_1, \dots, \{\mathbb{z}_{CF}, \mathbb{z}_{S1}, \dots, \mathbb{z}_{SN}\}_L]
+\\
+\hat{\mathbf{z}}_k = \text{LLM\_Layers}(\mathbf{x}, \mathbf{q}_k)
+\end{cases}
+$$
+这里 $q_k$ 是第 $k$ 个信息维度可学习的 query vector。通过上式，我们可以获得所有信息维度的 generated token，并且得到最终生成的 set identifier$\hat{i} = \{\hat{z}_\text{CF}, \hat{z}_{S_1}, \ldots, \hat{z}_{S_N}\}$。
+
+**Token Generation Optimization**：为了实现准确的 item 推荐，我们希望 generated token 尽可能和 target token 在每个维度对齐：
+$$
+\mathcal{L}_\text{Gen} = -\frac{1}{|\mathcal{D}|}\sum_{\mathcal{D}}\sum_{k \in \mathcal{F}}\frac{\exp(sim(\hat{z}_k, z_k))}{\sum_{z' \in \mathcal{Z}_k} \exp(sim(\hat{z}_k, z'))}
+$$
+这里$\mathcal{F} = \{\text{CF}, S_1, \ldots, S_N\}$，$sim(\cdot)$是相似度函数，$\mathcal{Z}_k$是第 $k$ 个信息维度的 token corpus。

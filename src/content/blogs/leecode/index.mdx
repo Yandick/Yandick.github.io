@@ -1,7 +1,7 @@
 ---
 title: leetcode打卡记录
 publishDate: 2026-03-28
-updatedDate: 2026-03-30
+updatedDate: 2026-04-02
 description: 题解和做题思路。
 category: daily
 heroImage:
@@ -325,4 +325,52 @@ class Solution:
             if dp[i] == ans:
                     ans_cnt += cnt[i]
         return ans_cnt
+```
+
+### 4/2
+- 题目：相交链表（leetcode-160）
+- 题目描述：给你两个单链表的头节点 headA 和 headB ，请你找出并返回两个单链表相交的起始节点。如果两个链表不存在相交节点，返回 null 。
+- 思路：这道题显然利用双指针寻找相交节点。不妨设链表 A 表示为 a + c，链表 B 表示为 b + c，其中 c 是两链表的公共部分。我们可以使用两个指针分别遍历链表 A 和链表 B，当指针到达链表末尾时，重置指针到另一个链表的头部。这样，当两个指针相遇时，如果存在相交节点，那么它们会在相交节点处相遇；如果不存在相交节点，那么 c = null，那么它们会同时走完 a + b 的路程后到达 null。
+- 时间复杂度：$O(m + n)$。
+- 代码实现：
+
+```python
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, x):
+#         self.val = x
+#         self.next = None
+
+class Solution:
+    def getIntersectionNode(self, headA: ListNode, headB: ListNode) -> Optional[ListNode]:
+        pa, pb = headA, headB
+        while pa != pb:
+            pa = pa.next if pa else headB
+            pb = pb.next if pb else headA
+        return pa
+```
+
+- 题目： 反转链表（leetcode-206）
+- 题目描述：给你单链表的头节点 head ，请你反转链表，并返回反转后的链表。
+- 思路：这道题可以使用迭代或者递归的方法来反转
+- 时间复杂度：$O(n)$。
+- 代码实现：
+
+```python
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
+class Solution:
+    def reverseList(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        prev = None
+        cur = head
+        while cur:
+            nxt = cur.next
+            cur.next = prev
+            prev = cur
+            cur = nxt
+
+        return prev
 ```
