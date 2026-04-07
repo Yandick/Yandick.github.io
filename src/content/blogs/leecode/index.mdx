@@ -374,3 +374,102 @@ class Solution:
 
         return prev
 ```
+
+### 4/3
+- 题目：回文链表（leetcode-234）
+- 题目描述：给你一个单链表的头节点 head ，请你判断该链表是否为回文链表。如果是，返回 true ；否则，返回 false 。
+- 思路：这题是一道双指针模板题，可以使用快慢指针先寻找链表中点，然后我们翻转后半段链表，和前半段比较即可。如果链表长度是奇数，我们找中点时跳过它，再往前走一步，因为它不参与比较（eg. 1->1->1->2->1->1->1）。
+- 时间复杂度：$O(n)$。
+- 代码实现：
+
+```python
+# Definition for singly-linked list.
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+class Solution:
+    def isPalindrome(self, head: Optional[ListNode]) -> bool:
+        if not head or not head.next:
+            return True
+        slow, fast = head, head
+        while fast and fast.next:
+            slow = slow.next
+            fast = fast.next.next
+        if fast:
+            slow = slow.next
+
+        cur = slow
+        prev = None
+        while cur:
+            nxt = cur.next
+            cur.next = prev
+            prev = cur 
+            cur = nxt
+        p1 = head
+        p2 = prev
+        while p2:
+            if p2.val != p1.val:
+                return False
+            p1 = p1.next
+            p2 = p2.next
+        return True
+```
+
+### 4/7
+- 题目：环形链表（leetcode-141）
+- 题目描述：给你一个链表的头节点 head ，判断链表中是否有环。如果链表中存在环，则返回 true ；否则，返回 false 。
+- 思路：用快慢指针来判断链表是否有环。快指针每次走两步，慢指针每次走一步，如果链表中存在环，那么快指针和慢指针最终会相遇；如果链表中不存在环，那么快指针会先到达链表末尾。
+- 时间复杂度：$O(n)$。
+- 代码实现：
+
+```python
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, x):
+#         self.val = x
+#         self.next = None
+
+class Solution:
+    def hasCycle(self, head: Optional[ListNode]) -> bool:
+        slow, fast = head, head
+        while fast and fast.next:
+            slow = slow.next
+            fast = fast.next.next
+
+            if slow == fast:
+                return True
+        return False
+```
+
+- 题目：环形链表 II（leetcode-142）
+- 题目描述：给定一个链表的头节点 head ，返回链表开始入环的第一个节点。如果链表无环，则返回 null 。
+- 思路：这题在判断链表是否有环的基础上，增加了寻找入环节点的步骤。首先，我们使用快慢指针来判断链表是否有环。如果链表中存在环，那么快指针和慢指针最终会相遇。此时，我们将其中一个指针重新指向链表的头节点，然后两个指针每次都走一步。当它们再次相遇时，相遇的节点就是链表开始入环的第一个节点。证明：设链表头节点到入环节点的距离为a，入环节点到相遇节点的距离为b，相遇节点到入环节点的距离为c，那么快指针走过的路程是慢指针的两倍，即2(a + b) = a + b + k * (b + c)，其中k是快指针在环内绕行的圈数。化简后得到a = (k - 1) * (b + c) + c，此时$a \equiv c \mod (b + c)$，因此当我们将其中一个指针重新指向链表的头节点，并且两个指针每次都走一步时，它们会在入环节点相遇。
+- 时间复杂度：$O(n)$。
+- 代码实现：
+
+```python
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, x):
+#         self.val = x
+#         self.next = None
+
+class Solution:
+    def detectCycle(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        slow, fast = head, head
+        while fast and fast.next:
+            slow = slow.next
+            fast = fast.next.next
+
+            if slow == fast:
+                break
+        if not fast or not fast.next:
+            return None
+        else:
+            p = head
+            while p != slow:
+                p = p.next
+                slow = slow.next
+            return p
+```

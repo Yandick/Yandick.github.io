@@ -19,6 +19,7 @@ import { GithubCard, LinkPreview, QRCode, ImageGroup, WebVideo } from '@/compone
 import Fig1 from './img/1.png'
 import Fig2 from './img/2.png'
 import Fig3 from './img/3.png'
+import Fig4 from './img/4.png'
 
 <LinkPreview href='https://arxiv.org/pdf/2502.10833' />
 
@@ -107,3 +108,51 @@ $$
 \mathcal{L}_\text{Gen} = -\frac{1}{|\mathcal{D}|}\sum_{\mathcal{D}}\sum_{k \in \mathcal{F}}\frac{\exp(sim(\hat{z}_k, z_k))}{\sum_{z' \in \mathcal{Z}_k} \exp(sim(\hat{z}_k, z'))}
 $$
 这里$\mathcal{F} = \{\text{CF}, S_1, \ldots, S_N\}$，$sim(\cdot)$是相似度函数，$\mathcal{Z}_k$是第 $k$ 个信息维度的 token corpus。
+**Token Generation Grounding**：为了解决生成的 tokens 组合远大于 item corpus 的问题，作者设计了一个策略，把每个维度生成的 token 分别对所有 item 打分，再做线性融合：
+$$
+\begin{cases}
+s_k = W_k\hat{z}_k
+\\
+s = (1 - \beta)s_{\text{CF}} + \beta \sum_{k \in \mathcal{F}/\ \text{CF}} s_k
+\end{cases}
+$$
+其中，$W_k \in \mathbb{R}^{|\mathcal{Z}_k| \times d}$从 $\mathcal{Z}_k$ 中得到，$\beta$是一个超参数，用来平衡语义维度和协同信号维度的权重。
+#### Sparse Attention Mask
+即使 item 被表示为无序的 “token set”，但是如果把用户历史展开后直接送入 Transformer，模型仍会按序列顺序编码这些 token，不可避免地为一个 item 中每个标识符引入顺序信息，如图4(a)所示。
+<figure class='not-prose my-6 flex flex-col items-center gap-2'>
+  <Image src={Fig4} alt='sparse attention mask' />
+  <figcaption class='text-center text-sm text-muted-foreground'>
+    图 4
+  </figcaption>
+</figure>
+为了解决这个问题，作者设计了一种稀疏注意力掩码，如图4(b)所示。
+
+**Time Complexity Analysis**：对于信息维度为 $M$，$L$ 个历史交互物品，原始注意力掩码时间复杂度为 $M^3L^2d$，如果使用稀疏注意力掩码，时间复杂度可以降低到 $M^2L^2d$。
+### Instanitiation
+为了在 LLMs 上实例化 SETRec，作者通过最小化如下损失来优化 CF，semantic tokenizers 和 learnable query vectors：
+$$
+\mathcal{L} = \mathcal{L}_\text{GEN} + \lambda \mathcal{L}_\text{AE}
+$$
+其中 $\lambda$ 是一个超参数，用来平衡生成损失和 AE 损失。在推理时， SETRec 首先将所有 items 分词成 set identifiers 并得到 token corpus $\mathcal{Z}$。推荐阶段，SETRec 将 user history 转换成 identifier sequence，通过稀疏注意力掩码进行 query-guided simultaneous generation，得到每个信息维度的 tokens。最后，通过 grounding head 把生成的 token 映射回 item corpus，得到最终推荐结果。
+## Experiment
+作者做了许多实验，旨在回答如下4个问题：
+- **RQ1**：在不同类型的 LLM 架构上，SETRec 相比各类 item identifier 基线方法的效果如何？
+-  **RQ2**：SETRec 的不同组件（如 CF token, semantic token, query-guided generation, sparse attention）对性能的贡献如何？
+- **RQ3**：随着模型参数规模增大，SETRec 的性能表现如何？它提升整体推荐效果的机制是什么？
+- **RQ4**：semantic embeddings 的数量、tokenizer 训练强度以及推理阶段的 semantic strength 对 SETRec 性能有何影响？
+### Experimental Settings
+#### Datasets
+作者采用三个 Amazon review datasets 上流行的数据集：Toys，Beauty和Sports，以及 steam 数据集。评估指标使用Recall@K 和 NDCG@K（K=5，10）。
+#### Baselines
+作者将 SETRec 和以下 baselines 进行对比，包括 single-token identifiers 和 token-sequence identifiers 两大类：
+- **DreamRec**：一种相关性很高的方法，使用 ID embedding 表示每个 item，并采用扩散模型对 LLM 生成的 ID embedding 进行细化。
+- **E4SRec**：利用预训练的 CF 模型获得 ID embedding，并使用线性投影层高效地计算 item 分数。
+- **BIGRec**：采用 item 标题作为 identifier，其中 token 来自人类词表。
+- **IDGenRec**：一种可学习的 ID 生成器，目标是从人类词表中生成简洁但信息丰富的标签来表示每个 item。
+- **CID**：利用层次聚类得到 token 序列，并通过 item 共现矩阵构建 identifiers，从而让交互行为相似的 items 共享相似 tokens。
+- **SemID**：使用外部 token 序列表示 items，该序列基于 item 的层次类别信息构建。
+- **Tiger**：采用带 codebook 的 RQ-VAE，将 item 语义信息量化为由外部 tokens 组成的 token 序列；其 identifier 按从粗粒度到细粒度的顺序组织信息。
+- **LETTER**：在 RQ-VAE 训练中同时引入语义信息与 CF 信息，得到具有多维信息且多样性更好的 identifiers。
+#### Implementation Details
+作者将方法应用在两种不同架构的 LLMs 上，分别是 encoder-decoder 架构的 T5-small和 decoder-only 架构的 Qwen2.5。对于 LLM 的训练，所有方法训练都采用相同的 prompt，"What would the user be likely to purchase next after buying items in their history?"。
+### Overall Performance (RQ1)
