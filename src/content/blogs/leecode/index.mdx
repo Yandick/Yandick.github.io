@@ -473,3 +473,74 @@ class Solution:
                 slow = slow.next
             return p
 ```
+
+### 4/8
+- 题目：合并两个有序链表（leetcode-21）
+- 题目描述：将两个升序链表合并为一个新的 升序 链表并返回。新链表是通过拼接给定的两个链表的所有节点组成的。
+- 思路：这题可以使用双指针实现，l1和l2分别指向两个链表的头节点，我们比较l1和l2当前指向的节点值，将较小的节点连接到新链表上，并将对应的指针向后移动一步。我们重复这个过程，直到其中一个链表被完全遍历。最后，我们将另一个链表剩余的部分连接到新链表上即可。
+- 时间复杂度：$O(m + n)$。
+- 代码实现：
+
+```python
+# Definition for singly-linked list.
+from typing import Optional
+
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+class Solution:
+    def mergeTwoLists(self, list1: Optional[ListNode], list2: Optional[ListNode]) -> Optional[ListNode]:
+        dummy = ListNode()
+        cur = dummy
+        l, r = list1, list2
+
+        while l and r:
+            if l.val < r.val:
+                cur.next = l
+                l = l.next
+            else:
+                cur.next = r
+                r = r.next
+            cur = cur.next
+
+        if l:
+            cur.next = l
+        if r:
+            cur.next = r
+
+        return dummy.next
+```
+
+- 题目：两数相加（leetcode-2）
+- 题目描述：给你两个 非空 的链表，表示两个非负的整数。它们每位数字都是按照逆序的方式存储的，并且每个节点只能存储一位数字。请你将两个数相加，并以相同形式返回一个表示和的链表。你可以假设除了数字 0 之外，这两个数都不会以 0 开头。
+- 思路：这题也是使用双指针来实现，我们分别用l1和l2指向两个链表的头节点，同时维护一个进位carry。我们比较l1和l2当前指向的节点值，将它们相加，并加上进位carry，得到当前位的和sum。然后，我们将sum对10取模得到当前位的值，并将sum除以10得到新的进位carry。我们将当前位的值连接到新链表上，并将对应的指针向后移动一步。我们重复这个过程，直到两个链表都被完全遍历，并且进位carry为0。最后，我们返回新链表的头节点即可。
+- 时间复杂度：$O(\max(m, n))$。
+- 代码实现：
+
+```python
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
+class Solution:
+    def addTwoNumbers(self, l1: Optional[ListNode], l2: Optional[ListNode]) -> Optional[ListNode]:
+        dummy = ListNode()
+        cur = dummy
+        cnt = 0
+        while l1 or l2 or cnt:
+            x = l1.val if l1 else 0
+            y = l2.val if l2 else 0
+
+            tot = x + y + cnt
+            cnt = tot // 10
+            cur.next = ListNode(tot % 10)
+            cur = cur.next
+            if l1:
+                l1 = l1.next
+            if l2:
+                l2 = l2.next
+        return dummy.next
+```
