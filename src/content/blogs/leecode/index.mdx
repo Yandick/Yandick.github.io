@@ -1,7 +1,7 @@
 ---
 title: leetcode打卡记录
 publishDate: 2026-03-28
-updatedDate: 2026-04-02
+updatedDate: 2026-04-15
 description: 题解和做题思路。
 category: daily
 heroImage:
@@ -543,4 +543,402 @@ class Solution:
             if l2:
                 l2 = l2.next
         return dummy.next
+```
+
+### 4/21
+（好久没写题解blog，今天爆更一下=_=）
+- 题目：删除链表的倒数第N个节点（leetcode-19）
+- 题目描述：给你一个链表，删除链表的倒数第 n 个节点，并且返回链表的头节点。
+- 思路：这题是一道双指针的模板题，注意到，如果我们使用两个指针p1和p2，p1先走n步，那么当p1走到链表末尾时，p2正好指向倒数第n个节点。为了方便删除操作，我们可以在链表头部添加一个哑节点dummy，这样即使需要删除的是原链表的头节点，我们也能通过dummy来处理。我们首先让p1从dummy开始走n步，这样当p1走到链表末尾时，p2就会指向倒数第n个节点的前一个节点。然后我们将p2的next指针指向p2的next的next，即可完成删除操作。
+- 时间复杂度：$O(m)$。
+- 代码实现：
+```python
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
+class Solution:
+    def removeNthFromEnd(self, head: Optional[ListNode], n: int) -> Optional[ListNode]:
+        dummy = ListNode(0, head)
+        slow, fast = dummy, dummy
+        for _ in range(n):
+            fast = fast.next
+        while fast.next:
+            slow = slow.next
+            fast = fast.next
+        slow.next = slow.next.next
+        return dummy.next
+```
+
+- 题目：两两交换链表中的节点（leetcode-24）
+- 题目描述：给你一个链表，两两交换其中相邻的节点，并返回交换后链表的头节点。你必须在不修改节点内部的值的情况下完成本题（即，只能进行节点交换）。
+- 思路：这题也是一道双指针的应用。我们定义一个group由两个要交换的节点构成，假设group前的节点是prev，group后的节点是next，那么交换group中的两个节点后，prev.next应该指向group中的第二个节点，group中的第一个节点应该指向next，group中的第二个节点应该指向group中的第一个节点。我们可以使用一个哑节点dummy来简化边界情况的处理。我们首先让prev指向dummy，然后每次交换完一组节点后，我们将prev移动到下一组的前一个节点，继续进行交换操作，直到链表末尾。处理循环只要保证prev.next和prev.next.next不为null即可。
+- 时间复杂度：$O(m)$。
+- 代码实现：
+```python
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
+class Solution:
+    def swapPairs(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        dummy = ListNode(0, head)
+        a = head
+        prev = dummy
+        while prev.next and prev.next.next:
+            b = a.next
+            nxt = b.next
+            prev.next = b
+            b.next = a
+            a.next = nxt
+            prev = a
+            a = nxt
+        return dummy.next
+```
+
+- 题目：K 个一组翻转链表（leetcode-25）
+- 题目描述：给你链表的头节点 head ，每 k 个节点一组进行翻转，请你返回修改后的链表。k 是一个正整数，它的值小于或等于链表的长度。如果节点总数不是 k 的整数倍，那么请将最后剩余的节点保持原有顺序。你不能只是单纯的改变节点内部的值，而是需要实际进行节点交换。
+- 思路：这题是上一题的一个推广，我们需要每k个节点进行一次翻转。我们同样可以使用一个哑节点dummy来简化边界情况的处理。我们首先让prev指向dummy，然后每次翻转完一组节点后，我们将prev移动到下一组的前一个节点，继续进行翻转操作，直到链表末尾。处理循环只要保证prev.next和prev.next.next...prev.next.k-1不为null即可。每组的处理是利用链表翻转的模板来实现的。
+- 时间复杂度：$O(m)$。
+- 代码实现：
+```python
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
+class Solution:
+    def reverseKGroup(self, head: Optional[ListNode], k: int) -> Optional[ListNode]:
+        dummy = ListNode(0, head)
+        group_prev = dummy
+        while True:
+            kth = group_prev
+            for _ in range(k):
+                kth = kth.next
+                if not kth:
+                    return dummy.next
+            group_next = kth.next
+            cur = group_prev.next
+            prev = group_next
+            tmp = None
+            while cur != group_next:
+                tmp = cur.next
+                cur.next = prev
+                prev = cur
+                cur = tmp
+            tmp = group_prev.next
+            group_prev.next = kth
+            group_prev = tmp
+        return dummy.next
+```
+
+- 题目：随机链表的复制（leetcode-138）
+- 题目描述：给你一个长度为 n 的链表，每个节点包含一个额外增加的随机指针 random ，该指针可以指向链表中的任何节点或空节点。构造这个链表的 深拷贝。 深拷贝应该正好由 n 个 全新 节点组成，其中每个新节点的值都设为其对应的原节点的值。新节点的 next 指针和 random 指针也都应指向复制链表中的新节点，并使原链表和复制链表中的这些指针能够表示相同的链表状态。复制链表中的指针都不应指向原链表中的节点 。例如，如果原链表中有 X 和 Y 两个节点，其中 X.random --> Y 。那么在复制链表中对应的两个节点 x 和 y ，同样有 x.random --> y 。返回复制链表的头节点。用一个由 n 个节点组成的链表来表示输入/输出中的链表。每个节点用一个 [val, random_index] 表示：
+    - val：一个表示 Node.val 的整数。
+    - random_index：随机指针指向的节点索引（范围从 0 到 n-1）；如果不指向任何节点，则为  null 。
+你的代码 只 接受原链表的头节点 head 作为传入参数。
+- 思路：这题有一个很有意思的trick，我们为每个节点创建一个备份，构造形如A->A'->B->B'->C->C'的链表结构，这样我们就能通过遍历设置好每个备份节点的next和random指针。具体来说，我们首先遍历原链表，为每个节点创建一个备份节点，并将其插入到原节点的后面。接着，我们再次遍历链表，为每个备份节点设置random指针，cur.next.random = cur.random.next（当前节点拷贝的random应该指向原节点random指向的节点的拷贝）。最后，我们需要将原链表和备份链表分离开来，恢复原链表的结构，并返回备份链表的头节点。
+- 时间复杂度：$O(n)$。
+- 代码实现：
+```python
+"""
+# Definition for a Node.
+class Node:
+    def __init__(self, x: int, next: 'Node' = None, random: 'Node' = None):
+        self.val = int(x)
+        self.next = next
+        self.random = random
+"""
+
+class Solution:
+    def copyRandomList(self, head: 'Optional[Node]') -> 'Optional[Node]':
+        if not head:
+            return None
+        cur = head
+        while cur:
+            new = Node(cur.val)
+            new.next = cur.next
+            cur.next = new
+            cur = new.next
+        cur = head
+        while cur:
+            if cur.random:
+                cur.next.random = cur.random.next
+            cur = cur.next.next
+        cur = head
+        new_head = cur.next
+        while cur:
+            new_cur = cur.next
+            cur.next = new_cur.next
+            if new_cur.next:
+                new_cur.next = new_cur.next.next
+            cur = cur.next
+        return new_head
+```
+
+- 题目：排序链表（leetcode-148）
+- 题目描述：给你链表的头节点 head ，请将其按 升序 排列并返回 排序后的链表 。
+- 思路：这题是归并排序的链表版本，我们要做的事情有两件：对于一个链表，要找到中点，这个在之前的题目有用过快慢指针实现；对于两个有序链表，要将它们合并成一个有序链表，这个在之前的题目也有用过双指针实现。我们可以使用递归来实现归并排序，首先找到链表的中点，将链表分成两半，然后递归地对两半进行排序，最后将排序好的两半合并成一个有序链表。
+- 时间复杂度：$O(n \log n)$。
+- 代码实现：
+```python
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
+class Solution:
+    def merge(self, l1: Optional[ListNode], l2: Optional[ListNode]) -> ListNode:
+        dummy = ListNode()
+        cur = dummy
+        while l1 and l2:
+            if l1.val < l2.val:
+                cur.next = l1
+                l1 = l1.next
+            else:
+                cur.next = l2
+                l2 = l2.next
+            cur = cur.next
+        cur.next = l1 if l1 else l2
+        return dummy.next
+
+
+    def sortList(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        if not head or not head.next:
+            return head
+        slow, fast = head, head.next
+        while fast and fast.next:
+            slow = slow.next
+            fast = fast.next.next
+        mid = slow.next
+        slow.next = None
+        left = self.sortList(head)
+        right = self.sortList(mid)
+
+        return self.merge(left, right)
+```
+
+- 题目：合并K个升序链表（leetcode-23）
+- 题目描述：给你一个链表数组，每个链表都已经按升序排列。请你将所有链表合并到一个升序链表中，返回合并后的链表。
+- 思路：这题是上一题的一个推广，我们需要将K个有序链表合并成一个有序链表。我们可以使用分治的思想来实现，首先将K个链表两两合并成K/2个链表，然后再将这K/2个链表两两合并成K/4个链表，依此类推，直到只剩下一个链表，这就是最终的合并结果。每次合并两个链表的操作可以使用上一题中实现的merge函数来完成。这里提供一个更好写的做法：用最小堆维护每个链表各自当前节点的最小值，每次取出堆顶，然后将下一个元素（如果不为空）放入堆中，这样逐个处理所有元素即可。
+- 代码实现：
+```python
+import heapq
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
+class Solution:
+    def mergeKLists(self, lists: list[Optional[ListNode]]) -> Optional[ListNode]:
+        heap = []
+        for i, list in enumerate(lists):
+            if list:
+                heapq.heappush(heap, (list.val, i, list))
+        dummy = ListNode()
+        tail = dummy
+        while heap:
+            val, i, cur = heapq.heappop(heap)
+            tail.next = cur
+            tail = tail.next
+            if cur.next:
+                heapq.heappush(heap, (cur.next.val, i, cur.next))
+        return dummy.next
+```
+
+- 题目：LRU 缓存（leetcode-146）
+- 题目描述：请你设计并实现一个满足  LRU (最近最少使用) 缓存 约束的数据结构。实现 LRUCache 类：
+    - LRUCache(int capacity) 以 正整数 作为容量 capacity 初始化 LRU 缓存
+    - int get(int key) 如果关键字 key 存在于缓存中，则返回关键字的值，否则返回 -1 。
+    - void put(int key, int value) 如果关键字 key 已经存在，则变更其数据值 value ；如果不存在，则向缓存中插入该组 key-value 。如果插入操作导致关键字数量超过 capacity ，则应该 逐出 最久未使用的关键字。
+    - 函数 get 和 put 必须以 O(1) 的平均时间复杂度运行。                               
+- 思路：这题是一道模拟题，我们很自然的想用哈希表来表示key-value对应关系，这样get操作就能在O(1)时间内完成。对于put操作，我们需要在插入新元素时判断是否超过容量，如果超过了，我们需要删除最近最少使用的元素，我们知道链表的删除操作是O(1)的，因此我们可以使用一个双向链表来维护元素的使用顺序。每当我们访问一个元素时，我们就将它移动到链表的头部，这样链表的尾部就会始终保持最近最少使用的元素。当我们需要删除最近最少使用的元素时，我们只需要删除链表尾部的节点即可。为了实现这个功能，我们需要在哈希表中存储每个key对应的链表节点，这样我们就能在O(1)时间内找到要移动或删除的节点。需要注意的是，
+- 代码实现：
+```python
+from typing import Deque
+class Node:
+    def __init__(self, key = 0, val=0, prev=None, next=None):
+        self.key = key
+        self.val = val
+        self.prev = prev
+        self.next = next
+
+class LRUCache:
+
+    def __init__(self, capacity: int):
+        self.capacity = capacity
+        self.kv = dict()
+        self.head = Node()
+        self.tail = Node()
+        self.head.next = self.tail
+        self.tail.prev = self.head
+
+
+    def get(self, key: int) -> int:
+        if key not in self.kv:
+            return -1
+        node = self.kv[key]
+        node.prev.next = node.next
+        node.next.prev = node.prev
+        node.prev = self.head
+        node.next = self.head.next
+        self.head.next.prev = node
+        self.head.next = node
+        return node.val
+        
+
+    def put(self, key: int, value: int) -> None:
+        if key in self.kv:
+            self.kv[key].val = value
+            node = self.kv[key]
+            node.prev.next = node.next
+            node.next.prev = node.prev
+            node.prev = self.head
+            node.next = self.head.next
+            self.head.next.prev = node
+            self.head.next = node
+        else:
+            if len(self.kv) == self.capacity:
+                rm_node = self.tail.prev
+                rm_key = rm_node.key
+                self.kv.pop(rm_key, None)
+                self.tail.prev = rm_node.prev
+                rm_node.prev.next = self.tail
+            new_node = Node(key, value)
+            self.kv[key] = new_node
+            new_node.next = self.head.next
+            new_node.prev = self.head
+            self.head.next.prev = new_node
+            self.head.next = new_node
+            
+
+# Your LRUCache object will be instantiated and called as such:
+# obj = LRUCache(capacity)
+# param_1 = obj.get(key)
+# obj.put(key,value)
+```
+
+- 题目：岛屿数量（leetcode-200）
+给你一个由 '1'（陆地）和 '0'（水）组成的的二维网格，请你计算网格中岛屿的数量。岛屿总是被水包围，并且每座岛屿只能由水平方向和/或竖直方向上相邻的陆地连接形成。此外，你可以假设该网格的四条边均被水包围。
+- 思路：这是经典的DFS题，我们可以遍历整个网格，当我们遇到一个'1'时，我们就找到了一个新的岛屿，我们将岛屿数量加1，然后我们用一个vis数组来维护每个岛屿是否被访问过，避免重复计算。每次递归时，将四个方向是岛屿且没被访问过的节点标记，并继续递归，直到将整个岛屿都标记为访问过。
+- 时间复杂度：$O(m \cdot n)$。
+- 代码实现：
+```python
+class Solution:
+    def numIslands(self, grid: list[list[str]]) -> int:
+        n = len(grid)
+        m = len(grid[0])
+        vis = [[0 for _ in range(m)] for _ in range(n)]
+
+        def dfs(i, j, n, m):
+            vis[i][j] = 1
+            
+            if i - 1 >= 0 and vis[i - 1][j] == 0 and grid[i - 1][j] == "1":
+                dfs(i - 1, j, n, m)
+            if i + 1 < n and vis[i + 1][j] == 0 and grid[i + 1][j] == "1":
+                dfs(i + 1, j, n, m)
+            if j - 1 >= 0 and vis[i][j - 1] == 0 and grid[i][j - 1] == "1":
+                dfs(i, j - 1, n, m)
+            if j + 1 < m and vis[i][j + 1] == 0 and grid[i][j + 1] == "1":
+                dfs(i, j + 1, n, m)
+        
+        ans = 0
+        for i in range(n):
+            for j in range(m):
+                if grid[i][j] == "1" and vis[i][j] == 0:
+                    ans += 1
+                    dfs(i, j, n, m)
+        return ans
+```
+
+- 腐烂的橘子（leetcode-994）
+- 题目描述：在给定的网格中，每个单元格可以有以下三个值之一：
+    - 值 0 代表空单元格；
+    - 值 1 代表新鲜橘子；
+    - 值 2 代表腐烂的橘子。
+
+    每分钟，任何与腐烂的橘子（在 4 个正方向上）相邻的新鲜橘子都会腐烂。返回直到单元格中没有新鲜橘子为止所必须经过的最小分钟数。如果不可能，返回 -1 。
+- 思路：这题是经典的BFS题，我们可以将所有腐烂的橘子作为BFS的起点，然后每次扩散到相邻的新鲜橘子，并将它们加入队列中，直到队列为空。我们需要维护一个计数器来记录分钟数，每次扩散完一轮后，分钟数加1。最后，我们需要检查是否还有新鲜橘子，如果有，说明无法完全腐烂，返回-1；如果没有，返回分钟数。
+- 时间复杂度：$O(m \cdot n)$。
+- 代码实现：
+```python
+from typing import Deque
+
+class Solution:
+    def orangesRotting(self, grid: list[list[int]]) -> int:
+        cnt = 0
+        time = 0
+        n = len(grid)
+        m = len(grid[0])
+        dq = Deque()
+        for i in range(n):
+            for j in range(m):
+                if grid[i][j] == 1:
+                    cnt += 1
+                elif grid[i][j] == 2:
+                    dq.append((i, j, 0))
+        if cnt == 0:
+            return 0
+        while dq:
+            if cnt == 0:
+                return time
+            t = dq.popleft()
+            i, j, cur = t
+            if i - 1 >= 0 and grid[i - 1][j] == 1:
+                grid[i - 1][j] = 2
+                cnt -= 1
+                dq.append((i - 1, j, cur + 1))
+            if i + 1 < n and grid[i + 1][j] == 1:
+                grid[i + 1][j] = 2
+                cnt -= 1
+                dq.append((i + 1, j, cur + 1))
+            if j - 1 >= 0 and grid[i][j - 1] == 1:
+                grid[i][j - 1] = 2
+                cnt -= 1
+                dq.append((i, j - 1, cur + 1))
+            if j + 1 < m and grid[i][j + 1] == 1:
+                grid[i][j + 1] = 2
+                cnt -= 1
+                dq.append((i, j + 1, cur + 1))
+            time = max(cur + 1, time)
+        return -1
+```
+
+- 题目：课程表（leetcode-207）
+- 题目描述：你这个学期必须选修 numCourses 门课程，记为 0 到 numCourses-1 。在选修某些课程之前需要一些先修课程。先修课程按数组 prerequisites 给出，其中 prerequisites[i] = [ai, bi] ，表示如果要学习课程 ai 则 必须 先学习课程 bi 。请你判断是否可能完成所有课程的学习？如果可以，返回 true ；否则，返回 false 。
+- 思路：这是一道拓扑排序模板题。我们可以将课程和先修课程的关系看作一个有向图，其中每个课程是一个节点，每个先修关系是一个有向边。我们需要判断这个有向图是否存在环，如果存在环，说明无法完成所有课程的学习；如果不存在环，说明可以完成所有课程的学习。我们可以使用Kahn算法来实现拓扑排序，首先计算每个节点的入度，然后将入度为0的节点加入队列中，依次处理队列中的节点，将它们从图中删除，并更新相邻节点的入度，如果相邻节点的入度变为0，则将其加入队列中。最后，如果处理完所有节点后还有节点未被处理，说明存在环，返回false；否则，返回true。
+- 时间复杂度：$O(V + E)$，其中V是课程的数量，E是先修关系的数量。
+- 代码实现：
+```python
+from typing import Deque
+
+class Solution:
+    def canFinish(self, numCourses: int, prerequisites: list[list[int]]) -> bool:
+        if not prerequisites:
+            return True
+        n = len(prerequisites)
+        edges = [[] for _ in range(numCourses)]
+        ans = []
+
+        dq = Deque()
+        indegree = [0 for _ in range(numCourses)]
+        for i in range(n):
+            u, v = prerequisites[i]
+            indegree[u] += 1
+            edges[v].append(u)
+        for idx, cnt in enumerate(indegree):
+            if cnt == 0:
+                dq.append(idx)
+        while dq:
+            u = dq.popleft()
+            ans.append(u)
+            for v in edges[u]:
+                indegree[v] -= 1
+                if indegree[v] == 0:
+                    dq.append(v)
+        if len(ans) != numCourses:
+            return False
+        return True
 ```
