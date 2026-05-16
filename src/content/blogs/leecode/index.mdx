@@ -1127,3 +1127,102 @@ class Solution:
         return ans
 ```
 
+### 5/16
+- 题目：有序链表转二叉搜索树（leetcode-109）
+- 题目描述：给定一个单链表，其中的元素按升序排序，将其转化为平衡二叉搜索树。
+- 思路：这题的思路是使用快慢指针来找到链表的中点，然后将中点作为二叉搜索树的根节点，左边的链表部分递归构建左子树，右边的链表部分递归构建右子树。需要注意的是，在找到中点后，我们需要将中点前一个节点的next指针设置为None，以断开链表，避免在递归构建左子树时出现死循环。
+- 时间复杂度：$O(n)$。
+- 代码实现：
+```python
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
+# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+class Solution:
+    def sortedListToBST(self, head: Optional[listNode]) -> Optional[TreeNode]:
+        if not head:
+            return None
+        if not head.next:
+            return TreeNode(head.val)
+        
+        prev, slow, fast = None, head, head
+        while fast and fast.next:
+            prev, slow, fast = slow, slow.next, fast.next.next
+        prev.next = None
+        root = TreeNode(slow.val)
+        root.left = self.sortedListToBST(head)
+        root.right = self.sortedListToBST(slow.next)
+
+        return root
+```
+
+- 题目：最小公共值（leetcode-2540）
+- 题目描述：给你两个以升序排列的整数数组 nums1 和 nums2 ，请你返回一个列表，包含两个数组中 最小 的公共值。假如两个数组没有公共值，请你返回一个空列表。列表中的值必须按 升序 排列。
+- 思路：这题的思路是使用双指针来遍历两个数组，我们分别用两个指针i和j来遍历nums1和nums2，如果nums1[i] < nums2[j]，说明nums1[i]不在nums2中，我们将i向右移动；如果nums1[i] > nums2[j]，说明nums2[j]不在nums1中，我们将j向右移动；如果nums1[i] == nums2[j]，说明找到了一个公共值，我们将其添加到结果列表中，并将i和j都向右移动。最后返回结果列表即可。
+- 时间复杂度：$O(n + m)$，其中n和m分别是nums1和nums2的长度。
+- 代码实现：
+```python
+class Solution:
+    def getCommon(self, nums1: list[int], nums2: list[int]) -> int:
+        p, q = 0, 0
+        while p < len(nums1) and q < len(nums2):
+            if nums1[p] == nums2[q]:
+                return nums1[p]
+            elif nums1[p] < nums2[q]:
+                p += 1
+            else:
+                q += 1
+
+        return -1
+```
+
+- 题目：最小操作次数使数组元素相等 II（leetcode-462）
+- 题目描述：给你一个长度为 n 的整数数组 nums ，返回使所有数组元素相等需要的最小操作数。每一步操作将会使数组中的一个元素增加 1 或者减少 1 。答案可以保证在 32-bit 整数范围内。
+- 思路：这题的思路是找到数组的中位数，然后计算每个元素和中位数的差值的绝对值之和。
+- 时间复杂度：$O(n)$。
+- 代码实现：
+```python
+class Solution:
+    def minMoves2(self, nums: list[int]) -> int:
+        nums.sort()
+        mid = nums[len(nums) // 2]
+        ans = 0
+        for num in nums:
+            ans += abs(num - mid)
+        return ans
+```
+
+- 题目：数据流的中位数（leetcode-295）
+- 题目描述：中位数是有序列表中间的值。如果列表长度是偶数，中位数则是中间两个值的平均值。设计一个支持以下两种操作的数据结构：
+    - void addNum(int num) 将整数 num 添加到数据结构中。
+    - double findMedian() 返回目前所有元素的中位数。
+- 思路：这题的思路是使用两个堆来维护数据流中的元素，一个最大堆用来存储较小的一半元素，另一个最小堆用来存储较大的一半元素。我们保证最大堆中的元素个数不超过最小堆中的元素个数，当我们添加一个新的元素时，我们首先将其添加到最大堆中，然后将最大堆的堆顶元素移动到最小堆中，如果最小堆中的元素个数超过了最大堆中的元素个数，我们再将最小堆的堆顶元素移动到最大堆中。这样我们就能保证两个堆中的元素个数之差不超过1。当我们需要找到中位数时，如果两个堆中的元素个数相等，那么中位数就是两个堆顶元素的平均值；如果两个堆中的元素个数不相等，那么中位数就是较大的一半的堆顶元素。
+- 时间复杂度：添加一个元素的时间复杂度为$O(\log n)$，找到中位数的时间复杂度为$O(1)$。
+- 代码实现：
+```python
+import heapq
+
+class MedianFinder:
+
+    def __init__(self):
+        self.small = []
+        self.large = []
+
+    def addNum(self, num: int) -> None:
+        heapq.heappush(self.small, -num)
+        heapq.heappush(self.large, -heapq.heappop(self.small))
+        if len(self.small) < len(self.large):
+            heapq.heappush(self.small, -heapq.heappop(self.large))
+
+    def findMedian(self) -> float:
+        if len(self.small) > len(self.large):
+            return -self.small[0]
+        return (-self.small[0] + self.large[0]) / 2
+```
