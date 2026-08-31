@@ -1,13 +1,11 @@
 ---
 import { Image } from 'astro:assets'
 import { Button, Card, Icon, Label } from '@/components/user'
-import BlogStats from '@/components/home/BlogStats.astro'
 import PageLayout from '@/layouts/BaseLayout.astro'
 import Section from '@/components/home/Section.astro'
 import SkillLayout from '@/components/home/SkillLayout.astro'
 import avatar from '@/assets/avatar.png'
 import config from '@/site-config'
-import GitHubActivityCalendar from '@/components/home/GitHubActivityCalendar.astro'
 
 const publications = [
   {
@@ -185,19 +183,6 @@ const projects = [
           ))}
         </div>
         <Button title='More projects' class='w-fit self-end' href='/en/projects' style='ahead' />
-      </Section>
-
-      <Section title='Statistics'>
-        <BlogStats
-          blogStartDate={
-            config.personal?.blogStartDate
-              ? new Date(config.personal.blogStartDate)
-              : new Date('2024-06-15')
-          }
-        />
-        {config.personal?.githubUsername && (
-          <GitHubActivityCalendar username={config.personal.githubUsername} />
-        )}
       </Section>
     </div>
   </main>
