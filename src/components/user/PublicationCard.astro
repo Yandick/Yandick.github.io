@@ -1,4 +1,5 @@
 ---
+import type { iconsType } from '@/types'
 import { cn } from '@/utils'
 import Icon from './Icon.astro'
 import SimpleIcon from './SimpleIcon.astro'
@@ -84,11 +85,15 @@ const symbolMutedClass = "text-muted-foreground/80 dark:text-slate-400/80";
       >
         {publication.type.charAt(0).toUpperCase() + publication.type.slice(1)}
       </span>
-      <span
-        class={cn('px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap', statusColors[publication.status])}
-      >
-        {publication.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-      </span>
+      {
+        publication.status !== publication.type && (
+          <span
+            class={cn('px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap', statusColors[publication.status])}
+          >
+            {publication.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+          </span>
+        )
+      }
     </div>
 
     { publication.authors && publication.authors.length > 0 && (
@@ -177,7 +182,7 @@ const symbolMutedClass = "text-muted-foreground/80 dark:text-slate-400/80";
                   color={iconConfig.color || 'currentColor'}
                 />
               ) : (
-                <Icon class='size-3.5 sm:size-4 text-current' name={iconConfig.icon as any} />
+                <Icon class='size-3.5 sm:size-4 text-current' name={iconConfig.icon as iconsType} />
               )}
               <span class="hidden sm:inline">{link.type.toUpperCase()}</span>
               <span class="sm:hidden">{link.type.charAt(0).toUpperCase() + link.type.slice(1)}</span>

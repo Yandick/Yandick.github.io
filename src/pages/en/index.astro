@@ -1,12 +1,88 @@
 ---
 import { Image } from 'astro:assets'
-import { Button, Card, Icon, Label } from '@/components/user'
+import { Button, Card, Icon, Label, PublicationSection } from '@/components/user'
 import BlogStats from '@/components/home/BlogStats.astro'
 import PageLayout from '@/layouts/BaseLayout.astro'
 import Section from '@/components/home/Section.astro'
+import SkillLayout from '@/components/home/SkillLayout.astro'
 import avatar from '@/assets/avatar.png'
 import config from '@/site-config'
 import GitHubActivityCalendar from '@/components/home/GitHubActivityCalendar.astro'
+
+type PublicationType = 'conference' | 'journal' | 'workshop' | 'preprint'
+type PublicationStatus = 'published' | 'accepted' | 'under-review' | 'preprint'
+
+const publications: Array<{
+  title: string
+  authors: Array<{ name: string; isMe?: boolean }>
+  venue: string
+  year: string
+  type: PublicationType
+  status: PublicationStatus
+  links: Array<{ type: string; href: string }>
+}> = [
+  {
+    title:
+      'FreoStream: Enhancing Stream Guardrails via Future-Aware Reasoning and Safety-Aligned Optimization',
+    authors: [
+      { name: 'Jianwei Wang' },
+      { name: 'Guoyang Shen' },
+      { name: 'Yanhong Wu', isMe: true },
+      { name: 'Haoran Li' },
+      { name: 'Hao Peng' },
+      { name: 'Huiping Zhuang' },
+      { name: 'Cen Chen' },
+      { name: 'Ziqian Zeng' }
+    ],
+    venue: 'arXiv preprint',
+    year: '2026',
+    type: 'preprint',
+    status: 'preprint',
+    links: [{ type: 'arxiv', href: 'https://arxiv.org/abs/2606.13737' }]
+  },
+  {
+    title:
+      'ChemVTS-Bench: Evaluating Visual-Textual-Symbolic Reasoning of Multimodal Large Language Models in Chemistry',
+    authors: [
+      { name: 'Zhiyuan Huang' },
+      { name: 'Baichuan Yang' },
+      { name: 'Zikun He' },
+      { name: 'Yanhong Wu', isMe: true },
+      { name: 'Fang Hongyu' },
+      { name: 'Zhenhe Liu' },
+      { name: 'Lin Dongsheng' },
+      { name: 'Bing Su' }
+    ],
+    venue: 'arXiv preprint',
+    year: '2025',
+    type: 'preprint',
+    status: 'preprint',
+    links: [{ type: 'arxiv', href: 'https://arxiv.org/abs/2511.17909' }]
+  }
+]
+
+const projects = [
+  {
+    heading: 'safewatch',
+    subheading: 'Self-updating LLM & agent safety paper radar',
+    href: 'https://github.com/Yandick/safewatch'
+  },
+  {
+    heading: 'Fast-Adaption-for-Gen-Rec',
+    subheading: 'Fast adaptation for generative recommendation',
+    href: 'https://github.com/Yandick/Fast-Adaption-for-Gen-Rec'
+  },
+  {
+    heading: 'lead-screening-agent',
+    subheading: 'LLM lead-screening agent with deterministic state-machine decisions',
+    href: 'https://github.com/Yandick/lead-screening-agent'
+  },
+  {
+    heading: 'MiniOS',
+    subheading: 'A tiny operating system kernel written in C',
+    href: 'https://github.com/Yandick/MiniOS'
+  }
+]
 ---
 
 <PageLayout meta={{ title: 'Home' }} highlightColor='#659EB966'>
@@ -16,7 +92,7 @@ import GitHubActivityCalendar from '@/components/home/GitHubActivityCalendar.ast
         <Image
           src={avatar}
           alt='profile'
-          class='h-36 w-auto rounded-lg border p-1'
+          class='h-36 w-auto rounded-lg border p-1 transition-transform duration-300 hover:scale-[1.02]'
           loading='eager'
         />
         <div class='flex flex-col gap-y-4'>
@@ -50,22 +126,49 @@ import GitHubActivityCalendar from '@/components/home/GitHubActivityCalendar.ast
           </div>
         </div>
       </div>
+    </section>
 
     <div id='content' class='animate flex flex-col gap-y-10 md:w-4/5 lg:w-5/6'>
       <Section title='About'>
-        <p class='text-muted-foreground'>Write your personal introduction here. It is recommended to have more than one line for better visual effect. This is a blog theme based on Axi-Theme. You can showcase your projects, experiences, and thoughts here.</p>
+        <p class='leading-relaxed text-muted-foreground'>
+          Ciallo～(∠・ω&lt; )⌒★ I'm Yandick, an undergraduate at South China University of
+          Technology. My research interests lie in generative recommendation and LLM safety —
+          from streaming guardrails to jailbreak defense. I enjoy reproducing papers, building
+          agents, and blogging about what I learn.
+        </p>
         <Button title='More about me' class='w-fit self-end' href='/en/about' style='ahead' />
       </Section>
+
       <Section title='Education'>
         <Card
           as='a'
-          heading='Your School / Organization'
-          subheading='Your Degree / Position'
-          date='Start Date - End Date'
-          href='#'
+          heading='South China University of Technology'
+          subheading='Undergraduate'
+          date='2023 - 2027'
+          href='https://www.scut.edu.cn/new/'
         >
         </Card>
       </Section>
+
+      <Section title='Publications'>
+        <PublicationSection publications={publications} />
+      </Section>
+
+      <Section title='Skills'>
+        <SkillLayout title='Languages' skills={['Python', 'C/C++', 'TypeScript']} />
+        <SkillLayout title='AI / ML' skills={['PyTorch', 'LLM Agents', 'Generative Rec']} />
+        <SkillLayout title='Tools' skills={['Linux', 'Git', 'Astro', 'Vue']} />
+      </Section>
+
+      <Section title='Projects'>
+        <div class='grid gap-3 sm:grid-cols-2'>
+          {projects.map((project) => (
+            <Card as='a' {...project} target='_blank' />
+          ))}
+        </div>
+        <Button title='More projects' class='w-fit self-end' href='/en/projects' style='ahead' />
+      </Section>
+
       <Section title='Statistics'>
         <BlogStats blogStartDate={config.personal?.blogStartDate ? new Date(config.personal.blogStartDate) : new Date('2024-06-15')} />
       </Section>
