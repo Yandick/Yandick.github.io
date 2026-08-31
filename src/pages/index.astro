@@ -1,6 +1,6 @@
 ---
 import { Image } from 'astro:assets'
-import { Button, Card, Icon, Label, PublicationSection } from '@/components/user'
+import { Button, Card, Icon, Label } from '@/components/user'
 import GitHubActivityCalendar from '@/components/home/GitHubActivityCalendar.astro'
 import PageLayout from '@/layouts/BaseLayout.astro'
 import Section from '@/components/home/Section.astro'
@@ -9,18 +9,7 @@ import BlogStats from '@/components/home/BlogStats.astro'
 import avatar from '@/assets/avatar.png'
 import config from '@/site-config'
 
-type PublicationType = 'conference' | 'journal' | 'workshop' | 'preprint'
-type PublicationStatus = 'published' | 'accepted' | 'under-review' | 'preprint'
-
-const publications: Array<{
-  title: string
-  authors: Array<{ name: string; isMe?: boolean }>
-  venue: string
-  year: string
-  type: PublicationType
-  status: PublicationStatus
-  links: Array<{ type: string; href: string }>
-}> = [
+const publications = [
   {
     title:
       'FreoStream: Enhancing Stream Guardrails via Future-Aware Reasoning and Safety-Aligned Optimization',
@@ -34,11 +23,8 @@ const publications: Array<{
       { name: 'Cen Chen' },
       { name: 'Ziqian Zeng' }
     ],
-    venue: 'arXiv preprint',
     year: '2026',
-    type: 'preprint',
-    status: 'preprint',
-    links: [{ type: 'arxiv', href: 'https://arxiv.org/abs/2606.13737' }]
+    href: 'https://arxiv.org/abs/2606.13737'
   },
   {
     title:
@@ -53,11 +39,8 @@ const publications: Array<{
       { name: 'Lin Dongsheng' },
       { name: 'Bing Su' }
     ],
-    venue: 'arXiv preprint',
     year: '2025',
-    type: 'preprint',
-    status: 'preprint',
-    links: [{ type: 'arxiv', href: 'https://arxiv.org/abs/2511.17909' }]
+    href: 'https://arxiv.org/abs/2511.17909'
   }
 ]
 
@@ -74,7 +57,7 @@ const projects = [
   },
   {
     heading: 'lead-screening-agent',
-    subheading: 'LLM lead-screening agent with deterministic state-machine decisions',
+    subheading: 'LLM screening agent with deterministic state-machine decisions',
     href: 'https://github.com/Yandick/lead-screening-agent'
   },
   {
@@ -87,15 +70,15 @@ const projects = [
 
 <PageLayout meta={{ title: 'Home' }} highlightColor='#659EB966'>
   <main class='flex w-full flex-col items-center'>
-    <section class='animate mb-10 flex flex-col items-center gap-y-7' id='content-header'>
+    <section class='animate mb-12 flex flex-col items-center gap-y-6' id='content-header'>
       <div class='flex flex-row items-center gap-x-6'>
         <Image
           src={avatar}
           alt='profile'
-          class='h-36 w-auto rounded-lg border p-1 transition-transform duration-300 hover:scale-[1.02]'
+          class='h-32 w-auto rounded-xl border p-1 shadow-sm transition-transform duration-300 hover:scale-[1.02]'
           loading='eager'
         />
-        <div class='flex flex-col gap-y-4'>
+        <div class='flex flex-col gap-y-3'>
           <h1 class='text-3xl font-bold'>{config.author}</h1>
           <div class='flex flex-wrap gap-x-1 gap-y-1'>
             {config.personal?.location && (
@@ -128,12 +111,14 @@ const projects = [
       </div>
     </section>
 
-    <div id='content' class='animate flex flex-col gap-y-10 md:w-4/5 lg:w-5/6'>
+    <div
+      id='content'
+      class='animate mx-auto flex w-full max-w-4xl flex-col gap-y-12 px-4 sm:px-0'
+    >
       <Section title='About'>
         <p class='leading-relaxed text-muted-foreground'>
-          Ciallo～(∠・ω&lt; )⌒★ 这里是 Yandick，华南理工大学本科生。研究兴趣集中在生成式推荐（Generative
-          Recommendation）与 LLM 安全（流式安全护栏、越狱防御），平时喜欢复现论文、折腾
-          Agent，并把笔记写成博客。
+          Ciallo～(∠・ω&lt; )⌒★ 这里是 Yandick，华南理工大学本科生。研究兴趣：生成式推荐与 LLM
+          安全（流式安全护栏、越狱防御）。
         </p>
         <Button title='More about me' class='w-fit self-end' href='/about' style='ahead' />
       </Section>
@@ -150,7 +135,40 @@ const projects = [
       </Section>
 
       <Section title='Publications'>
-        <PublicationSection publications={publications} />
+        <ul class='flex flex-col gap-3'>
+          {publications.map((pub) => (
+            <li>
+              <a
+                href={pub.href}
+                target='_blank'
+                rel='noopener noreferrer'
+                class='group flex flex-col gap-y-1.5 rounded-xl border border-border/70 bg-card px-5 py-4 transition-all hover:border-foreground/25 hover:bg-muted/40'
+              >
+                <div class='flex items-start justify-between gap-4'>
+                  <p class='my-0 text-sm font-medium leading-snug transition-colors group-hover:text-primary sm:text-base'>
+                    {pub.title}
+                  </p>
+                  <span class='mt-0.5 shrink-0 rounded-full bg-muted px-2.5 py-0.5 font-mono text-xs text-muted-foreground'>
+                    arXiv · {pub.year}
+                  </span>
+                </div>
+                <p class='my-0 text-xs text-muted-foreground'>
+                  {pub.authors.slice(0, 3).map((author, index) => (
+                    <span>
+                      {index > 0 && ', '}
+                      {author.isMe ? (
+                        <strong class='font-semibold text-foreground'>{author.name}</strong>
+                      ) : (
+                        <span>{author.name}</span>
+                      )}
+                    </span>
+                  ))}
+                  <span>{', et al.'}</span>
+                </p>
+              </a>
+            </li>
+          ))}
+        </ul>
       </Section>
 
       <Section title='Skills'>
@@ -169,11 +187,17 @@ const projects = [
       </Section>
 
       <Section title='Statistics'>
-        <BlogStats blogStartDate={config.personal?.blogStartDate ? new Date(config.personal.blogStartDate) : new Date('2024-06-15')} />
+        <BlogStats
+          blogStartDate={
+            config.personal?.blogStartDate
+              ? new Date(config.personal.blogStartDate)
+              : new Date('2024-06-15')
+          }
+        />
+        {config.personal?.githubUsername && (
+          <GitHubActivityCalendar username={config.personal.githubUsername} />
+        )}
       </Section>
-      {config.personal?.githubUsername && (
-        <GitHubActivityCalendar username={config.personal.githubUsername}/>
-      )}
     </div>
   </main>
 </PageLayout>
