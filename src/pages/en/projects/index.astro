@@ -13,19 +13,10 @@ const headings = [
   <ProjectSection
     project={[
       {
-        name: 'Project 1',
-        description: 'Project description 1. You can introduce the main features here.',
-        image: 'lumina.webp',
-        links: [{ type: 'site', href: '#' }]
-      },
-      {
-        name: 'Project 2',
-        description: 'Project description 2. You can introduce the main features here.',
-        image: 'byddl.webp',
-        links: [
-          { type: 'site', href: '#' },
-          { type: 'github', href: '#' }
-        ]
+        name: 'lead-screening-agent',
+        description:
+          'Lead pre-screening agent (kapibala): three independent LLM calls estimate intent, dissatisfaction and follow-up requests, while a deterministic state machine and truth-table policy pick the single legal action out of four — the LLM estimates, it never decides. Layered defenses: input injection guard, sliding-window rate limiting, action allowlist and output canary checks. 18/18 red-team attacks blocked, 103 tests green.',
+        links: [{ type: 'github', href: 'https://github.com/Yandick/lead-screening-agent' }]
       }
     ]}
   />

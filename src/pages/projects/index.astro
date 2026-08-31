@@ -13,19 +13,10 @@ const headings = [
   <ProjectSection
     project={[
       {
-        name: '项目 1',
-        description: '项目描述 1。你可以在这里介绍项目的主要功能。',
-        image: 'lumina.webp',
-        links: [{ type: 'site', href: '#' }]
-      },
-      {
-        name: '项目 2',
-        description: '项目描述 2。你可以在这里介绍项目的主要功能。',
-        image: 'byddl.webp',
-        links: [
-          { type: 'site', href: '#' },
-          { type: 'github', href: '#' }
-        ]
+        name: 'lead-screening-agent',
+        description:
+          '获客初筛 Agent（kapibala）：三次独立 LLM 调用分别估计意图、情绪与跟进请求，由确定性状态机与真值表策略从 4 个动作中选择唯一合法动作，LLM 只估计、不决策。分层安全防护：输入注入检测、滑动窗口限流、动作白名单、输出 canary 哨兵，红蓝攻防 18/18 通过，103 项测试全绿。',
+        links: [{ type: 'github', href: 'https://github.com/Yandick/lead-screening-agent' }]
       }
     ]}
   />
